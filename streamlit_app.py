@@ -43,8 +43,6 @@ ask_button = st.button("Ask", type="primary")
 if ask_button and question.strip():
     company_filter = COMPANY_FILTER_MAP[company]
 
-    st.write(f"DEBUG — company_filter: `{company_filter}`")
-
     with st.spinner(f"Querying {company} 10-K..."):
         try:
             result = rag_query_filtered(question, company_filter)
