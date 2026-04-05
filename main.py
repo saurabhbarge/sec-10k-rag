@@ -26,5 +26,6 @@ def query(request: QueryRequest):
     return {
         "question": request.question,
         "company": request.company,
-        "answer": answer
+        "answer": answer,
+        "sources": answer["sources"]
     }

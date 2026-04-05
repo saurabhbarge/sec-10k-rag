@@ -69,4 +69,15 @@ def rag_query_filtered(query, company=None, namespace="financial-docs", top_k=3)
     # Step 4: Generate answer with Gemini
     answer = ask_gemini(query, results["matches"])
 
-    return answer
+    # return answer
+
+    sources = [
+    {
+        "text": match["metadata"]["text"],
+        "score": match["score"],
+        "company": match["metadata"].get("company", "N/A")
+    }
+    for match in results["matches"]
+]
+
+    return {"answer": answer, "sources": sources}
