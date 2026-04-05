@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
-from rag import rag_query_filtered
+from rag import rag_query_streaming
 
 # Initialise FastAPI app
-app = FastAPI(title="SEC 10-K RAG API")
+app = FastAPI(title="SEC 10-K RAG")
 
 # Define request body structure
 class QueryRequest(BaseModel):
@@ -19,13 +19,17 @@ def health():
 # Query endpoint
 @app.post("/query")
 def query(request: QueryRequest):
-    answer = rag_query_filtered(
+    stream, sources = rag_query_streaming(
         query=request.question,
         company=request.company
+    )
+    full_answer = "".join(
+        chunk.text for chunk in stream if chunk.text
     )
     return {
         "question": request.question,
         "company": request.company,
-        "answer": answer,
-        "sources": answer["sources"]
+        "answer": full_answer,
+        "sources": sources
     }
+

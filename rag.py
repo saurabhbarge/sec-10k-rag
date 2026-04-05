@@ -19,34 +19,34 @@ splitter = RecursiveCharacterTextSplitter(
     separators=["\n\n", "\n", ".", " "]
 )
 
-def ask_gemini(query, retrieved_chunks, model="gemini-2.5-flash-lite"):
-    context = "\n\n".join([chunk["metadata"]["text"] for chunk in retrieved_chunks])
+# def ask_gemini(query, retrieved_chunks, model="gemini-3.1-flash-lite-preview"):
+#     context = "\n\n".join([chunk["metadata"]["text"] for chunk in retrieved_chunks])
 
-    prompt = f"""You are a senior financial analyst with expertise in analysing SEC 10-K filings.
-Your job is to answer questions accurately and concisely using only the provided context.
+#     prompt = f"""You are a senior financial analyst with expertise in analysing SEC 10-K filings.
+# Your job is to answer questions accurately and concisely using only the provided context.
 
-Guidelines:
-- Answer directly and concisely based strictly on the context provided
-- If the context contains relevant financial figures, always include them in your answer
-- If the context is insufficient to answer the question, say exactly: "The provided filings do not contain enough information to answer this question."
-- Do not speculate or use any knowledge outside of the provided context
-- Where relevant, mention the company name and fiscal year in your answer
+# Guidelines:
+# - Answer directly and concisely based strictly on the context provided
+# - If the context contains relevant financial figures, always include them in your answer
+# - If the context is insufficient to answer the question, say exactly: "The provided filings do not contain enough information to answer this question."
+# - Do not speculate or use any knowledge outside of the provided context
+# - Where relevant, mention the company name and fiscal year in your answer
 
-Context:
-{context}
+# Context:
+# {context}
 
-Question: {query}
+# Question: {query}
 
-Answer:"""
+# Answer:"""
 
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt
-    )
+#     response = client.models.generate_content(
+#         model=model,
+#         contents=prompt
+#     )
 
-    return response.text
+#     return response.text
 
-def rag_query_filtered(query, company=None, namespace="financial-docs", top_k=3):
+def rag_query_streaming(query, company=None, namespace="financial-docs", top_k=3):
     # Step 1: Embed the query
     query_embedding = pc.inference.embed(
         model="llama-text-embed-v2",
@@ -66,18 +66,56 @@ def rag_query_filtered(query, company=None, namespace="financial-docs", top_k=3)
         filter=filter
     )
 
-    # Step 4: Generate answer with Gemini
-    answer = ask_gemini(query, results["matches"])
+    context = "\n\n".join([chunk["metadata"]["text"] for chunk in results["matches"]])
 
-    # return answer
+    # Step 4: Build the prompt    
+    prompt = f"""You are a senior financial analyst with expertise in analysing SEC 10-K filings.
+Your job is to answer questions accurately and concisely using only the provided context.
 
+Guidelines:
+- Answer directly and concisely based strictly on the context provided
+- If the context contains relevant financial figures, always include them in your answer
+- If the context is insufficient to answer the question, say exactly: "The provided filings do not contain enough information to answer this question."
+- Do not speculate or use any knowledge outside of the provided context
+- Where relevant, mention the company name and fiscal year in your answer
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+    
+    # Step 5: Package sources
     sources = [
-    {
-        "text": match["metadata"]["text"],
-        "score": match["score"],
-        "company": match["metadata"].get("company", "N/A")
-    }
-    for match in results["matches"]
-]
+        {
+            "text": match["metadata"]["text"],
+            "score": round(match["score"], 4),
+            "company": match["metadata"].get("company", "N/A")
+        }
+        for match in results["matches"]
+    ]
 
-    return {"answer": answer, "sources": sources}
+    # Step 6: Stream Gemini response
+    stream = client.models.generate_content_stream(
+        model="gemini-3.1-flash-lite-preview",
+        contents=prompt
+    )
+
+    return stream, sources
+
+#     # Step 4: Generate answer with Gemini
+#     answer = ask_gemini(query, results["matches"])
+
+#     # return answer
+
+#     sources = [
+#     {
+#         "text": match["metadata"]["text"],
+#         "score": match["score"],
+#         "company": match["metadata"].get("company", "N/A")
+#     }
+#     for match in results["matches"]
+# ]
+
+#     return {"answer": answer, "sources": sources}

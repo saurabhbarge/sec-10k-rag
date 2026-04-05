@@ -1,5 +1,5 @@
 import streamlit as st
-from rag import rag_query_filtered
+from rag import rag_query_streaming
 
 # --- Page config ---
 st.set_page_config(
@@ -25,11 +25,11 @@ with st.sidebar:
     st.caption("LLM: Gemini 3.1 Flash Lite")
 
 # --- Company name → Pinecone metadata filter map ---
-COMPANY_FILTER_MAP = {
-    "JPMorgan Chase": "JPMorgan Chase",
-    "PayPal": "PayPal",
-    "Visa": "Visa"
-}
+# COMPANY_FILTER_MAP = {
+#     "JPMorgan Chase": "JPMorgan Chase",
+#     "PayPal": "PayPal",
+#     "Visa": "Visa"
+# }
 
 # --- Main input ---
 question = st.text_input(
@@ -41,24 +41,26 @@ ask_button = st.button("Ask", type="primary")
 
 # --- Query and display ---
 if ask_button and question.strip():
-    company_filter = COMPANY_FILTER_MAP[company]
+    company_filter = company
 
-    with st.spinner(f"Querying {company} 10-K..."):
-        try:
-            result = rag_query_filtered(question, company_filter)
+    with st.spinner("Retrieving relevant chunks..."):
+        stream, sources = rag_query_streaming(question, company_filter)
 
-            st.markdown("### 📝 Answer")
-            st.write(result["answer"])
+    st.markdown("### 📝 Answer")
+    answer_placeholder = st.empty()
+    full_answer = ""
 
-            if result.get("sources"):
-                st.markdown("### 📚 Retrieved Chunks")
-                for i, source in enumerate(result["sources"], 1):
-                    with st.expander(f"Chunk {i} — Similarity: {source['score']}"):
-                        st.markdown(f"**Company:** {source['company']}")
-                        st.markdown(f"**Text:**\n\n{source['text']}")
+    for chunk in stream:
+        if chunk.text:
+            full_answer += chunk.text
+            answer_placeholder.markdown(full_answer)
 
-        except Exception as e:
-            st.error(f"Something went wrong: {e}")
+    if sources:
+        st.markdown("### 📚 Retrieved Chunks")
+        for i, source in enumerate(sources, 1):
+            with st.expander(f"Chunk {i} — Similarity: {source['score']}"):
+                st.markdown(f"**Company:** {source['company']}")
+                st.markdown(f"**Text:**\n\n{source['text']}")
 
 elif ask_button and not question.strip():
     st.warning("Please enter a question before clicking Ask.")
