@@ -24,13 +24,6 @@ with st.sidebar:
     st.caption("Embeddings: llama-text-embed-v2")
     st.caption("LLM: Gemini 3.1 Flash Lite")
 
-# --- Company name → Pinecone metadata filter map ---
-# COMPANY_FILTER_MAP = {
-#     "JPMorgan Chase": "JPMorgan Chase",
-#     "PayPal": "PayPal",
-#     "Visa": "Visa"
-# }
-
 # --- Main input ---
 question = st.text_input(
     "Ask a question about the selected company's 10-K filing:",
