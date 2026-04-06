@@ -44,7 +44,7 @@ Answer + Source Chunks
 ---
 
 ## 📁 Project Structure
-````
+```
 sec-10k-rag/
 ├── streamlit_app.py      # Streamlit UI with streaming response
 ├── rag.py                # Core RAG logic — embedding, retrieval, generation
