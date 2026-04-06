@@ -7,7 +7,7 @@ A production-ready Retrieval-Augmented Generation (RAG) system for querying SEC 
 ---
 
 ## 🏗️ Architecture
-
+```
 User Query
 │
 ▼
@@ -24,7 +24,7 @@ Gemini 3.1 Flash Lite (streaming response)
 │
 ▼
 Answer + Source Chunks
-
+```
 ---
 
 ## ⚙️ Tech Stack
@@ -44,7 +44,7 @@ Answer + Source Chunks
 ---
 
 ## 📁 Project Structure
-
+````
 sec-10k-rag/
 ├── streamlit_app.py      # Streamlit UI with streaming response
 ├── rag.py                # Core RAG logic — embedding, retrieval, generation
@@ -53,7 +53,7 @@ sec-10k-rag/
 ├── Dockerfile            # Container configuration
 ├── docker-compose.yml    # Multi-service local development
 └── requirements.txt      # Dependencies
-
+```
 ---
 
 ## 📊 Data
