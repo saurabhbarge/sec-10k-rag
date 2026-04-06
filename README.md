@@ -2,7 +2,7 @@
 
 A production-ready Retrieval-Augmented Generation (RAG) system for querying SEC 10-K annual filings from major financial companies. Built with a focus on accurate financial document retrieval and real-time streaming responses.
 
-🔗 **Live Demo:** [Launch the App](https://your-render-url.onrender.com)
+🔗 **Live Demo:** [Launch the App](https://sec-10k-rag-pedk.onrender.com/)
 
 ---
 
